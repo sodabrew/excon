@@ -64,5 +64,20 @@ Shindo.tests('Excon query string variants') do
       end
     end
 
+    # Hash elements in the query hash get serialized by Ruby and then urlencoded
+    # TODO support for serializing hash elements in a reasonble way?
+    tests(":query => {:foo => {:bar => 'baz'}, :me => 'too'}") do
+      response = connection.request(:method => :get, :path => '/query', :query => {:foo => {:bar => 'baz'}, :me => 'too'})
+      query_string = response.body[7..-1] # query string sent
+
+      test("query string turns a Hash into an urlencoded mess") do
+        query_string.split('&').include?('foo=%7B%3Abar%3D%3E%22baz%22%7D')
+      end
+
+      test("query string sent includes 'me=too'") do
+        query_string.split('&').include?('me=too')
+      end
+    end
+
   end
 end
